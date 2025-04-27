@@ -1,7 +1,7 @@
 import math
 from typing import Optional
 
-from point3d import Point3D
+from .point3d import Point3D
 
 class IK3DOF:
     def __init__(self):

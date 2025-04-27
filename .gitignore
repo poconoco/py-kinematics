@@ -1,0 +1,27 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Unit test / coverage reports
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+# IDE-specific files
+.idea/
+.vscode/
+
