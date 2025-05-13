@@ -12,9 +12,9 @@ class IK3DOF:
         self.tibia_length: float = None
 
         # Angular parameters
-        self.coxa_sideway_angle: float = None  # Angle to send to servo for coxa to point straight sideways (left or right depending on multiplier)
-        self.femur_horizontal_angle: float = None  # Angle to send to servo for femur to point horizontally
-        self.tibia_femur_parallel_angle: float = None  # Angle to send to servo for tibia to point parallel to femur
+        self.coxa_angle_for_sideway: float = None  # Angle to send to servo for coxa to point straight sideways (left or right depending on multiplier)
+        self.femur_angle_for_horizontal: float = None  # Angle to send to servo for femur to point horizontally
+        self.tibia_angle_for_femur_parallel: float = None  # Angle to send to servo for tibia to point parallel to femur
 
         # Multipliers (to mirror, reverse servo direction or fine tune)
         self.coxa_multiplier: float = 1
@@ -26,9 +26,9 @@ class IK3DOF:
                 or self.coxa_v_offset is None \
                 or self.femur_length is None \
                 or self.tibia_length is None \
-                or self.coxa_sideway_angle is None \
-                or self.femur_horizontal_angle is None \
-                or self.tibia_femur_parallel_angle is None:
+                or self.coxa_angle_for_sideway is None \
+                or self.femur_angle_for_horizontal is None \
+                or self.tibia_angle_for_femur_parallel is None:
             raise ValueError('Not all parameters are set')
 
         # Translate to 2D xy
@@ -52,9 +52,9 @@ class IK3DOF:
                 selected_tibia_angle = tibia_angle
 
         # Now we can calculate final angles
-        final_coxa_angle = self.coxa_sideway_angle + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
-        final_femur_angle = self.femur_horizontal_angle + selected_femur_angle * self.femur_multiplier
-        final_tibia_angle = self.tibia_femur_parallel_angle - selected_femur_angle + selected_tibia_angle * self.tibia_multiplier
+        final_coxa_angle = self.coxa_angle_for_sideway + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
+        final_femur_angle = self.femur_angle_for_horizontal + selected_femur_angle * self.femur_multiplier
+        final_tibia_angle = self.tibia_angle_for_femur_parallel - selected_femur_angle + selected_tibia_angle * self.tibia_multiplier
         
         return final_coxa_angle, final_femur_angle, final_tibia_angle
 
