@@ -1,24 +1,32 @@
 from .point3d import Point3D
 
 class Smoother3D:
-    def __init__(self, initialPoint, max_speed, acceleration, deceleration):
-        self.position = initialPoint
-        self.target = initialPoint
-        self.velocity = Point3D(0, 0, 0)
+    def __init__(self, initial_point, max_speed, acceleration, deceleration, dt_threshold):
+        self.position = initial_point
+        self.target = initial_point
+        self.velocity = Point3D()
         self.max_speed = max_speed
         self.acceleration = acceleration
         self.deceleration = deceleration
+        self.dt_threshold = dt_threshold
 
-    def setTarget(self, targetPoint):
-        self.target = targetPoint
+    def set_target(self, target_point):
+        self.target = target_point
 
     def tick(self, dt):
+        if dt > self.dt_threshold:
+            # If there was no ticks for a while, don't smooth, just
+            # jump to the new location
+            self.position = self.target
+            self.velocity = Point3D()
+            return
+
         direction = (self.target - self.position).normalize()
         distance = (self.target - self.position).magnitude()
 
         if distance < 0.01:
             # Close enough to stop
-            self.velocity = Point3D(0, 0, 0)
+            self.velocity = Point3D()
             self.position = self.target
             return
 

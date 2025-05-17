@@ -1,7 +1,7 @@
 import math
 
 class Point3D:
-    def __init__(self, x, y, z):
+    def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
         self.z = z
@@ -26,4 +26,4 @@ class Point3D:
         return self if mag == 0 else self / mag
 
     def __repr__(self):
-        return f"Point3D({self.x}, {self.y}, {self.z})"
+        return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
