@@ -9,10 +9,10 @@ class Smoother3D:
         self._target_pos = start_pos
         self._current_speed = Point3D()
 
-    def write(self, target_pos):
+    def set_target(self, target_pos):
         self._target_pos = target_pos
 
-    def get_current_pos(self):
+    def get(self):
         return self._current_pos
 
     def tick(self, dt):
@@ -42,10 +42,8 @@ class Smoother3D:
         delta_distance = self._current_speed * dt
         self._current_pos += delta_distance
 
-        if self.near_zero(self._current_pos - self._target_pos):
+        if self.near_zero((self._current_pos - self._target_pos).magnitude()):
             self._current_pos = self._target_pos
-
-        self._servo.write(self._current_pos)
 
     def apply_acceleration(self, speed, accel, dt):
         delta_a = accel * dt
