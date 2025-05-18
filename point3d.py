@@ -24,6 +24,9 @@ class Point3D:
     def normalize(self):
         mag = self.magnitude()
         return self if mag == 0 else self / mag
+    
+    def distance(self, other):
+        return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
 
     def __repr__(self):
         return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
