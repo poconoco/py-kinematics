@@ -12,9 +12,9 @@ class IK3DOF:
         self.tibia_length: float
 
         # Angular parameters
-        self.coxa_angle_for_forward: float  # Angle to send to servo for coxa to point straight sideways (left or right depending on multiplier)
-        self.femur_angle_for_horizontal: float  # Angle to send to servo for femur to point horizontally
-        self.tibia_angle_for_femur_parallel: float  # Angle to send to servo for tibia to point parallel to femur
+        self.coxa_angle_for_forward: float  # Servo angle for coxa to point straight forward
+        self.femur_angle_for_horizontal: float  # Servo angle for femur to be horizontal
+        self.tibia_angle_for_femur_parallel: float  # Servo angle for tibia to be parallel to femur
 
         # Multipliers (to mirror, reverse servo direction or fine tune)
         self.coxa_multiplier: float = 1
