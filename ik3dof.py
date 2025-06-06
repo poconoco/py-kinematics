@@ -6,15 +6,15 @@ from .point3d import Point3D
 class IK3DOF:
     def __init__(self):
         # Dimensional parameters
-        self.coxa_h_offset: float = None
-        self.coxa_v_offset: float = None
-        self.femur_length: float = None
-        self.tibia_length: float = None
+        self.coxa_h_offset: float
+        self.coxa_v_offset: float
+        self.femur_length: float
+        self.tibia_length: float
 
         # Angular parameters
-        self.coxa_angle_for_forward: float = None  # Angle to send to servo for coxa to point straight sideways (left or right depending on multiplier)
-        self.femur_angle_for_horizontal: float = None  # Angle to send to servo for femur to point horizontally
-        self.tibia_angle_for_femur_parallel: float = None  # Angle to send to servo for tibia to point parallel to femur
+        self.coxa_angle_for_forward: float  # Angle to send to servo for coxa to point straight sideways (left or right depending on multiplier)
+        self.femur_angle_for_horizontal: float  # Angle to send to servo for femur to point horizontally
+        self.tibia_angle_for_femur_parallel: float  # Angle to send to servo for tibia to point parallel to femur
 
         # Multipliers (to mirror, reverse servo direction or fine tune)
         self.coxa_multiplier: float = 1
@@ -36,9 +36,6 @@ class IK3DOF:
         y_2d = reach_to.z - self.coxa_v_offset
 
         possible_joints = self._circle_intersection(x_2d, y_2d, self.femur_length, self.tibia_length)
-        if not possible_joints:
-            # Can't reach
-            return None, None, None
 
         # Chose the best joint
         selected_femur_angle = None
@@ -50,6 +47,10 @@ class IK3DOF:
             if selected_femur_angle is None or selected_femur_angle < femur_angle:
                 selected_femur_angle = femur_angle
                 selected_tibia_angle = tibia_angle
+
+        if selected_femur_angle is None or selected_tibia_angle is None:
+            # Can't reach
+            return None, None, None
 
         # Now we can calculate final angles
         final_coxa_angle = self.coxa_angle_for_forward - 90 + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
@@ -75,7 +76,7 @@ class IK3DOF:
 
 
     @staticmethod
-    def _circle_intersection(x2, y2, r1, r2):
+    def _circle_intersection(x2, y2, r1, r2) -> list[tuple[float, float]]:
         # Distance to reach point
         d = math.sqrt(x2 ** 2 + y2 ** 2)
 
