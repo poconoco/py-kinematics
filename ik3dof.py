@@ -12,7 +12,7 @@ class IK3DOF:
         self.tibia_length: float
 
         # Angular parameters
-        self.coxa_angle_for_forward: float  # Servo angle for coxa to point straight forward
+        self.coxa_angle_for_perpendicular: float  # Servo angle for coxa to point perpendicular to the body (to the right or left, depending on the leg side)
         self.femur_angle_for_horizontal: float  # Servo angle for femur to be horizontal
         self.tibia_angle_for_femur_parallel: float  # Servo angle for tibia to be parallel to femur
 
@@ -26,7 +26,7 @@ class IK3DOF:
                 or self.coxa_v_offset is None \
                 or self.femur_length is None \
                 or self.tibia_length is None \
-                or self.coxa_angle_for_forward is None \
+                or self.coxa_angle_for_perpendicular is None \
                 or self.femur_angle_for_horizontal is None \
                 or self.tibia_angle_for_femur_parallel is None:
             raise ValueError('Not all parameters are set')
@@ -53,7 +53,7 @@ class IK3DOF:
             return None, None, None
 
         # Now we can calculate final angles
-        final_coxa_angle = self.coxa_angle_for_forward - 90 + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
+        final_coxa_angle = self.coxa_angle_for_perpendicular + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
         final_femur_angle = self.femur_angle_for_horizontal + selected_femur_angle * self.femur_multiplier
         final_tibia_angle = self.tibia_angle_for_femur_parallel + (selected_tibia_angle - selected_femur_angle) * self.tibia_multiplier
         
