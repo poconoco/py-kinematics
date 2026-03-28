@@ -32,7 +32,8 @@ class IK3DOF:
             raise ValueError('Not all parameters are set')
 
         # Translate to 2D xy
-        x_2d = math.sqrt(reach_to.x ** 2 + reach_to.y ** 2) - self.coxa_h_offset
+        x_2d_sign = 1 if reach_to.x >= 0 else -1
+        x_2d = math.sqrt(reach_to.x ** 2 + reach_to.y ** 2) * x_2d_sign - self.coxa_h_offset
         y_2d = reach_to.z - self.coxa_v_offset
 
         possible_joints = self._circle_intersection(x_2d, y_2d, self.femur_length, self.tibia_length)
@@ -40,11 +41,16 @@ class IK3DOF:
         # Chose the best joint
         selected_femur_angle = None
         selected_tibia_angle = None
+        selected_j_x = None
         for joint in possible_joints:
-            femur_angle = math.atan2(joint[1], joint[0]) * 180 / math.pi
-            tibia_angle = math.atan2(y_2d - joint[1], x_2d - joint[0]) * 180 / math.pi
+            j_x = joint[0]
+            j_y = joint[1]
+            femur_angle = math.atan2(j_y, j_x) * 180 / math.pi
+            tibia_angle = math.atan2(y_2d - j_y, x_2d - j_x) * 180 / math.pi
 
-            if selected_femur_angle is None or selected_femur_angle < femur_angle:
+
+            if selected_j_x is None or selected_j_x < j_x:
+                selected_j_x = j_x
                 selected_femur_angle = femur_angle
                 selected_tibia_angle = tibia_angle
 
@@ -52,8 +58,12 @@ class IK3DOF:
             # Can't reach
             return None, None, None
 
+        coxa_raw_angle = math.atan2(reach_to.y, reach_to.x) * 180 / math.pi
+        if reach_to.x < 0:
+            coxa_raw_angle += 180
+
         # Now we can calculate final angles
-        final_coxa_angle = self.coxa_angle_for_perpendicular + (math.atan2(reach_to.y, reach_to.x) * 180 / math.pi) * self.coxa_multiplier
+        final_coxa_angle = self.coxa_angle_for_perpendicular + coxa_raw_angle * self.coxa_multiplier
         final_femur_angle = self.femur_angle_for_horizontal + selected_femur_angle * self.femur_multiplier
         final_tibia_angle = self.tibia_angle_for_femur_parallel + (selected_tibia_angle - selected_femur_angle) * self.tibia_multiplier
         
@@ -66,10 +76,10 @@ class IK3DOF:
 
     @staticmethod
     def _normalize_deg(angle):
-        while angle < 0:
+        while angle < -180:
             angle += 360
 
-        while angle >= 360:
+        while angle >= 180:
             angle -= 360
 
         return angle
