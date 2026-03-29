@@ -1,7 +1,9 @@
 import math
+
 from typing import Optional
 
 from .point3d import Point3D
+from .utils import normalize_ik_deg, circle_intersection
 
 class IK4DOF:
     def __init__(self):
@@ -51,7 +53,9 @@ class IK4DOF:
         # Turn coxa2 in the direction where the target point is, and translate further 3DOF
         # solution
         coxa2_angle = math.atan2(reach_to.y, reach_to.x) * 180 / math.pi
+        print(f'coxa2_angle 1 {coxa2_angle}')
         coxa2_angle = min(max(coxa2_angle, self.coxa2_min_angle), self.coxa2_max_angle)
+        print(f'coxa2_angle 2 {coxa2_angle}')
         coxa2_angle_rad = coxa2_angle * math.pi / 180
 
         coxa2_x = self.coxa2_length * math.cos(coxa2_angle_rad)
@@ -60,7 +64,7 @@ class IK4DOF:
         x_2d -= coxa2_x
         y_2d -= coxa2_y
 
-        possible_joints = self._circle_intersection(x_2d, y_2d, self.femur_length, self.tibia_length)
+        possible_joints = circle_intersection(x_2d, y_2d, self.femur_length, self.tibia_length)
 
         # Chose the best joint
         selected_femur_angle = None
@@ -80,7 +84,7 @@ class IK4DOF:
 
         if selected_femur_angle is None or selected_tibia_angle is None:
             # Can't reach
-            return None, None, None
+            return None, None, None, None
 
         coxa1_angle = math.atan2(reach_to.y, reach_to.x) * 180 / math.pi
         if reach_to.x < 0:
@@ -93,53 +97,8 @@ class IK4DOF:
         final_tibia_angle = self.tibia_angle_for_femur_parallel + (selected_tibia_angle - selected_femur_angle - coxa2_angle) * self.tibia_multiplier
 
         return (
-            self._normalize_deg(final_coxa1_angle),
-            self._normalize_deg(final_coxa2_angle),
-            self._normalize_deg(final_femur_angle),
-            self._normalize_deg(final_tibia_angle)
+            normalize_ik_deg(final_coxa1_angle),
+            normalize_ik_deg(final_coxa2_angle),
+            normalize_ik_deg(final_femur_angle),
+            normalize_ik_deg(final_tibia_angle)
         )
-
-
-    @staticmethod
-    def _normalize_deg(angle):
-        while angle < -180:
-            angle += 360
-
-        while angle >= 180:
-            angle -= 360
-
-        return angle
-
-
-    @staticmethod
-    def _circle_intersection(x2, y2, r1, r2) -> list[tuple[float, float]]:
-        # Distance to reach point
-        d = math.sqrt(x2 ** 2 + y2 ** 2)
-
-        if d == 0:
-            # Reach point is at the start of a coxa, would not reach
-            return []
-
-        # Now find circles intersection point to find joint coordinates
-        a = (r1 * r1 - r2 * r2 + d * d) / (2 * d)
-
-        # Circles don't intersect
-        if (r1 < a):
-            return []
-
-
-        h = math.sqrt(r1 * r1 - a * a)
-        xt = a * (x2 / d)
-        yt = a * (y2 / d)
-
-        # Two solutions
-        return [
-            (
-                xt + h * (y2 / d),
-                yt - h * (x2 / d)
-            ),
-            (
-                xt - h * (y2 / d),
-                yt + h * (x2 / d)
-            )
-        ]
