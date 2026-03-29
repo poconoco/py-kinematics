@@ -50,12 +50,15 @@ class IK4DOF:
         x_2d = math.sqrt(reach_to.x ** 2 + reach_to.y ** 2) * x_2d_sign - self.coxa1_h_offset
         y_2d = reach_to.z - self.coxa1_v_offset
 
-        # Turn coxa2 in the direction where the target point is, and translate further 3DOF
-        # solution
-        coxa2_angle = math.atan2(reach_to.y, reach_to.x) * 180 / math.pi
-        print(f'coxa2_angle 1 {coxa2_angle}')
+        # Turn coxa2 to approx angle
+        reach_angle = math.atan2(y_2d, x_2d) * 180 / math.pi
+        reach_distance = math.sqrt(x_2d ** 2 + y_2d ** 2)
+        max_distance = self.coxa2_length + self.femur_length + self.tibia_length
+        reach_proportion = reach_distance / max_distance
+
+        coxa2_angle = reach_angle - (90 - 90 * reach_proportion)
+
         coxa2_angle = min(max(coxa2_angle, self.coxa2_min_angle), self.coxa2_max_angle)
-        print(f'coxa2_angle 2 {coxa2_angle}')
         coxa2_angle_rad = coxa2_angle * math.pi / 180
 
         coxa2_x = self.coxa2_length * math.cos(coxa2_angle_rad)
@@ -69,7 +72,6 @@ class IK4DOF:
         # Chose the best joint
         selected_femur_angle = None
         selected_tibia_angle = None
-        selected_j_x = None
         for joint in possible_joints:
             j_x = joint[0]
             j_y = joint[1]
@@ -77,8 +79,7 @@ class IK4DOF:
             tibia_angle = math.atan2(y_2d - j_y, x_2d - j_x) * 180 / math.pi
 
 
-            if selected_j_x is None or selected_j_x < j_x:
-                selected_j_x = j_x
+            if selected_femur_angle is None or (tibia_angle - femur_angle) < (selected_tibia_angle - selected_femur_angle):
                 selected_femur_angle = femur_angle
                 selected_tibia_angle = tibia_angle
 

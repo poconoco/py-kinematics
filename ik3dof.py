@@ -43,7 +43,6 @@ class IK3DOF:
         # Chose the best joint
         selected_femur_angle = None
         selected_tibia_angle = None
-        selected_j_x = None
         for joint in possible_joints:
             j_x = joint[0]
             j_y = joint[1]
@@ -51,8 +50,7 @@ class IK3DOF:
             tibia_angle = math.atan2(y_2d - j_y, x_2d - j_x) * 180 / math.pi
 
 
-            if selected_j_x is None or selected_j_x < j_x:
-                selected_j_x = j_x
+            if selected_femur_angle is None or (tibia_angle - femur_angle) < (selected_tibia_angle - selected_femur_angle):
                 selected_femur_angle = femur_angle
                 selected_tibia_angle = tibia_angle
 
