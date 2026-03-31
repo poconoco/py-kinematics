@@ -7,21 +7,27 @@ from .utils import normalize_ik_deg, circle_intersection
 
 class IK4DOF:
     def __init__(self):
+
+        # The difference of 4DOF leg from 3DOF leg is that there is additional coxa extension that rotates and extends the leg in the same plane
+        # femur and tibia servos are operating. So this makes IK to have infinite number of solutions. And to simlify it, we first estimate the 
+        # angle of coxa extension, calculate its end point, and from that we have the same 2DOF problem as we solve in the 3DOF leg with circle
+        # intersection method. 
+
         # coxa1 - servo that rotates coxa in horizontal plane
-        # coxa2 - Additionalk servo that rotates coxa extension in vertical plane
+        # coxa2 - additional servo that rotates coxa extension in vertical plane
 
         # Dimensional parameters
-        self.coxa1_h_offset: float
-        self.coxa1_v_offset: float
+        self.coxa1_h_offset: float  # Leg root point horizontal offset
+        self.coxa1_v_offset: float  # Leg root point vertical offset
         self.coxa2_length: float
-        self.coxa2_min_angle: float
-        self.coxa2_max_angle: float
         self.femur_length: float
         self.tibia_length: float
 
         # Angular parameters
         self.coxa1_for_perpendicular: float  # Servo angle for coxa to point perpendicular to the body (to the right or left, depending on the leg side)
         self.coxa2_angle_for_horizontal: float # Angle for coxa extension to be horizontal
+        self.coxa2_min_angle: float
+        self.coxa2_max_angle: float
         self.femur_angle_for_coxa2_parallel: float  # Servo angle for femur to be parallel to the coxa extension
         self.tibia_angle_for_femur_parallel: float  # Servo angle for tibia to be parallel to femur
 
@@ -50,7 +56,7 @@ class IK4DOF:
         x_2d = math.sqrt(reach_to.x ** 2 + reach_to.y ** 2) * x_2d_sign - self.coxa1_h_offset
         y_2d = reach_to.z - self.coxa1_v_offset
 
-        # Turn coxa2 to approx angle
+        # Step 1: estimate good enough angle for coxa
         reach_angle = math.atan2(y_2d, x_2d) * 180 / math.pi
         reach_distance = math.sqrt(x_2d ** 2 + y_2d ** 2)
         max_distance = self.coxa2_length + self.femur_length + self.tibia_length
@@ -61,9 +67,11 @@ class IK4DOF:
         coxa2_angle = min(max(coxa2_angle, self.coxa2_min_angle), self.coxa2_max_angle)
         coxa2_angle_rad = coxa2_angle * math.pi / 180
 
+        # Step 2: calculate the end point of coxa extension
         coxa2_x = self.coxa2_length * math.cos(coxa2_angle_rad)
         coxa2_y = self.coxa2_length * math.sin(coxa2_angle_rad)
 
+        # Step 3: and update the target point to be relative to the end of coxa extension
         x_2d -= coxa2_x
         y_2d -= coxa2_y
 
