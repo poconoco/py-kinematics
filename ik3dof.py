@@ -18,11 +18,6 @@ class IK3DOF:
         self.femur_angle_for_horizontal: float  # Servo angle for femur to be horizontal
         self.tibia_angle_for_femur_parallel: float  # Servo angle for tibia to be parallel to femur
 
-        # Multipliers (to mirror, reverse servo direction or fine tune)
-        self.coxa_multiplier: float = 1
-        self.femur_multiplier: float = 1
-        self.tibia_multiplier: float = 1
-
     def get_angles(self, reach_to: Point3D) -> tuple[Optional[float], Optional[float], Optional[float]]:
         if self.coxa_h_offset is None \
                 or self.coxa_v_offset is None \
@@ -63,9 +58,9 @@ class IK3DOF:
             coxa_raw_angle += 180
 
         # Now we can calculate final angles
-        final_coxa_angle = self.coxa_angle_for_perpendicular + coxa_raw_angle * self.coxa_multiplier
-        final_femur_angle = self.femur_angle_for_horizontal + selected_femur_angle * self.femur_multiplier
-        final_tibia_angle = self.tibia_angle_for_femur_parallel + (selected_tibia_angle - selected_femur_angle) * self.tibia_multiplier
+        final_coxa_angle = self.coxa_angle_for_perpendicular + coxa_raw_angle
+        final_femur_angle = self.femur_angle_for_horizontal + selected_femur_angle
+        final_tibia_angle = self.tibia_angle_for_femur_parallel + selected_tibia_angle - selected_femur_angle
         
         return (
             normalize_ik_deg(final_coxa_angle),

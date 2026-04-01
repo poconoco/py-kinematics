@@ -31,12 +31,6 @@ class IK4DOF:
         self.femur_angle_for_coxa2_parallel: float  # Servo angle for femur to be parallel to the coxa extension
         self.tibia_angle_for_femur_parallel: float  # Servo angle for tibia to be parallel to femur
 
-        # Multipliers (to mirror, reverse servo direction or fine tune)
-        self.coxa1_multiplier: float = 1
-        self.coxa2_multiplier: float = 1
-        self.femur_multiplier: float = 1
-        self.tibia_multiplier: float = 1
-
     def get_angles(self, reach_to: Point3D) -> tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
         if self.coxa1_h_offset is None \
                 or self.coxa1_v_offset is None \
@@ -56,6 +50,8 @@ class IK4DOF:
         x_2d = math.sqrt(reach_to.x ** 2 + reach_to.y ** 2) * x_2d_sign - self.coxa1_h_offset
         y_2d = reach_to.z - self.coxa1_v_offset
 
+        #print(f'1) x_2d: {int(x_2d)}, x_2d: {int(y_2d)}')
+
         # Step 1: estimate good enough angle for coxa
         reach_angle = math.atan2(y_2d, x_2d) * 180 / math.pi
         reach_distance = math.sqrt(x_2d ** 2 + y_2d ** 2)
@@ -64,6 +60,8 @@ class IK4DOF:
 
         coxa2_angle = reach_angle - (90 - 90 * reach_proportion)
 
+        #print(f'coxa2_angle: {coxa2_angle}')
+
         coxa2_angle = min(max(coxa2_angle, self.coxa2_min_angle), self.coxa2_max_angle)
         coxa2_angle_rad = coxa2_angle * math.pi / 180
 
@@ -71,9 +69,13 @@ class IK4DOF:
         coxa2_x = self.coxa2_length * math.cos(coxa2_angle_rad)
         coxa2_y = self.coxa2_length * math.sin(coxa2_angle_rad)
 
+        #print(f'coxa2_x: {int(coxa2_x)}, coxa2_y: {int(coxa2_y)}')
+
         # Step 3: and update the target point to be relative to the end of coxa extension
         x_2d -= coxa2_x
         y_2d -= coxa2_y
+
+        #print(f'2) x_2d: {int(x_2d)}, x_2d: {int(y_2d)}')
 
         possible_joints = circle_intersection(x_2d, y_2d, self.femur_length, self.tibia_length)
 
@@ -99,11 +101,18 @@ class IK4DOF:
         if reach_to.x < 0:
             coxa1_angle += 180
 
+        #print(f'Absolute angles: C2 {int(coxa2_angle)}, F {int(selected_femur_angle)}, T {int(selected_tibia_angle)}')
+
+        femur_angle = selected_femur_angle - coxa2_angle
+        tibia_angle = selected_tibia_angle - femur_angle - coxa2_angle
+
+        #print(f'Relative angles: C2 {int(coxa2_angle)}, F {int(femur_angle)}, T {int(tibia_angle)}')
+
         # Now we can calculate final angles
-        final_coxa1_angle = self.coxa1_for_perpendicular + coxa1_angle * self.coxa1_multiplier
+        final_coxa1_angle = self.coxa1_for_perpendicular + coxa1_angle
         final_coxa2_angle = self.coxa2_angle_for_horizontal + coxa2_angle
-        final_femur_angle = self.femur_angle_for_coxa2_parallel + (selected_femur_angle - coxa2_angle) * self.femur_multiplier
-        final_tibia_angle = self.tibia_angle_for_femur_parallel + (selected_tibia_angle - selected_femur_angle - coxa2_angle) * self.tibia_multiplier
+        final_femur_angle = self.femur_angle_for_coxa2_parallel + femur_angle
+        final_tibia_angle = self.tibia_angle_for_femur_parallel + tibia_angle
 
         return (
             normalize_ik_deg(final_coxa1_angle),
