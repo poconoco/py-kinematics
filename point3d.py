@@ -30,3 +30,7 @@ class Point3D:
 
     def __repr__(self):
         return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
+
+    @staticmethod
+    def from_dict(d):
+        return Point3D(d['x'], d['y'], d['z'])
