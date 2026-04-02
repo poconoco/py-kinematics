@@ -1,36 +1,80 @@
 import math
 
+from .orientation3d import Orientation3D
+
 class Point3D:
-    def __init__(self, x=0, y=0, z=0):
+    def __init__(self, x: float = 0, y: float = 0, z: float = 0):
         self.x = x
         self.y = y
         self.z = z
 
-    def __add__(self, other):
+    def __add__(self, other: 'Point3D') -> 'Point3D':
         return Point3D(self.x + other.x, self.y + other.y, self.z + other.z)
 
-    def __sub__(self, other):
+    def __sub__(self, other: 'Point3D') -> 'Point3D':
         return Point3D(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def __mul__(self, scalar):
+    def __mul__(self, scalar: float) -> 'Point3D':
         return Point3D(self.x * scalar, self.y * scalar, self.z * scalar)
 
-    def __truediv__(self, scalar):
+    def __truediv__(self, scalar: float) -> 'Point3D':
         return Point3D(self.x / scalar, self.y / scalar, self.z / scalar)
 
-    def magnitude(self):
+    def magnitude(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def normalize(self):
+    def normalize(self) -> 'Point3D':
         mag = self.magnitude()
-        return self if mag == 0 else self / mag
-    
-    def distance(self, other):
+        return Point3D(0, 0, 0) if mag == 0 else self / mag
+
+    def distance(self, other: 'Point3D') -> float:
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
 
+    def rotate(self, orientation: Orientation3D, origin: 'Point3D' | None = None) -> 'Point3D':
+        """
+        Rotates this point around another 'origin' Point3D using the given Orientation3D.
+        Assumes standard coordinate mapping: Pitch=X, Roll=Y, Yaw=Z.
+        """
+        if origin is None:
+            origin = Point3D()  # Default to (0, 0, 0) if no origin provided
+
+        # Step 1: Translate the point so the rotation origin is at (0, 0, 0)
+        tx = self.x - origin.x
+        ty = self.y - origin.y
+        tz = self.z - origin.z
+
+        pitch = math.radians(orientation.pitch)
+        roll = math.radians(orientation.roll)
+        yaw = math.radians(orientation.yaw)
+
+        # Pre-calculate sine and cosine for efficiency
+        cp, sp = math.cos(pitch), math.sin(pitch)
+        cr, sr = math.cos(roll), math.sin(roll)
+        cy, sy = math.cos(yaw), math.sin(yaw)
+
+        # Step 2: Apply rotations (Order matters in 3D! This uses Pitch -> Roll -> Yaw)
+
+        # 2a. Rotate around X-axis (Pitch)
+        x1 = tx
+        y1 = ty * cp - tz * sp
+        z1 = ty * sp + tz * cp
+
+        # 2b. Rotate around Y-axis (Roll)
+        x2 = x1 * cr + z1 * sr
+        y2 = y1
+        z2 = -x1 * sr + z1 * cr
+
+        # 2c. Rotate around Z-axis (Yaw)
+        x3 = x2 * cy - y2 * sy
+        y3 = x2 * sy + y2 * cy
+        z3 = z2
+
+        # Step 3: Translate the point back
+        return Point3D(x3 + origin.x, y3 + origin.y, z3 + origin.z)
+
     @staticmethod
-    def from_dict(d):
+    def from_dict(d: dict) -> 'Point3D':
         return Point3D(d['x'], d['y'], d['z'])
