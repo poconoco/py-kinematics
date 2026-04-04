@@ -1,5 +1,7 @@
 import math
 
+from typing import Optional
+
 from .orientation3d import Orientation3D
 
 class Point3D:
@@ -33,7 +35,7 @@ class Point3D:
     def __repr__(self) -> str:
         return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
 
-    def rotate(self, orientation: Orientation3D, origin: 'Point3D' | None = None) -> 'Point3D':
+    def rotate(self, orientation: Orientation3D, origin: Optional['Point3D'] = None) -> 'Point3D':
         """
         Rotates this point around another 'origin' Point3D using the given Orientation3D.
         Assumes standard coordinate mapping: Pitch=X, Roll=Y, Yaw=Z.
