@@ -1,10 +1,9 @@
 from .point3d import Point3D
 
 class Smoother3D:
-    def __init__(self, start_pos: Point3D, max_speed: float, acceleration: float, dt_threshold: float):
+    def __init__(self, start_pos: Point3D, max_speed: float, acceleration: float):
         self._max_abs_speed = max_speed
         self._acceleration = acceleration
-        self._dt_threshold = dt_threshold
         self._current_pos = start_pos
         self._target_pos = start_pos
         self._current_speed = Point3D()
