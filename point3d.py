@@ -25,7 +25,7 @@ class Point3D:
     def magnitude(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def normalize(self) -> 'Point3D':
+    def normalized(self) -> 'Point3D':
         mag = self.magnitude()
         return Point3D(0, 0, 0) if mag == 0 else self / mag
 
