@@ -16,7 +16,7 @@ class Smoother3D:
 
     def tick(self, dt):
         target_distance = self._current_pos.distance(self._target_pos)
-        target_direction = (self._target_pos - self._current_pos).normalize()
+        target_direction = (self._target_pos - self._current_pos).normalized()
         abs_speed = self._current_speed.magnitude()
         # abs_target_distance = abs(target_distance)
 
