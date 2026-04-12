@@ -47,7 +47,7 @@ class Point3D:
         return Point3D(self.x * scale, self.y * scale, self.z * scale)
 
     def __repr__(self) -> str:
-        return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
+        return f"Point3D({self.x:.2f}, {self.y:.2f}, {self.z:.2f})"
 
     def rotate(self, orientation: Orientation3D, origin: Optional['Point3D'] = None) -> 'Point3D':
         """
