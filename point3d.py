@@ -32,6 +32,20 @@ class Point3D:
     def distance(self, other: 'Point3D') -> float:
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
 
+    def cube_to_sphere(self):
+        # This is to map the coordinates within a cube (-1 to 1 in all coordinates independently)
+        # To sphere with radius 1
+
+        length = math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
+        if length == 0:
+            return Point3D(0, 0, 0)
+
+        max_comp = max(abs(self.x), abs(self.y), abs(self.z))
+        scale = max_comp / length
+
+        return Point3D(self.x * scale, self.y * scale, self.z * scale)
+
     def __repr__(self) -> str:
         return f"Point3D({int(self.x)},\t{int(self.y)},\t{int(self.z)})"
 
