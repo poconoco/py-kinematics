@@ -21,6 +21,9 @@ class Point3D:
 
     def __truediv__(self, scalar: float) -> 'Point3D':
         return Point3D(self.x / scalar, self.y / scalar, self.z / scalar)
+    
+    def copy(self):
+        return Point3D(self.x, self.y, self.z)
 
     def magnitude(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
