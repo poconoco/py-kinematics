@@ -1,17 +1,20 @@
 from .orientation3d import Orientation3D
 
+import math
+
 class SimpleLerp:
     def __init__(self, start_val: float, speed_factor: float):
         self._current_val = start_val
         self._target_val = start_val
-        self._speed_factor = speed_factor # e.g., 5.0
+        self._speed_factor = speed_factor
 
     def set_target(self, target_val: float):
         self._target_val = target_val
 
     def tick(self, dt: float):
         error = self._target_val - self._current_val
-        self._current_val += error * self._speed_factor * dt
+        decay = 1.0 - math.exp(-self._speed_factor * dt)
+        self._current_val += error * decay
 
     def get(self) -> float:
        return self._current_val 
