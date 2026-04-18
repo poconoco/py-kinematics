@@ -60,7 +60,7 @@ class Point3D:
         if origin is None:
             origin = Point3D()  # Default to (0, 0, 0) if no origin provided
 
-        # Step 1: Translate the point so the rotation origin is at (0, 0, 0)
+        # Translate the point so the rotation origin is at (0, 0, 0)
         tx = self.x - origin.x
         ty = self.y - origin.y
         tz = self.z - origin.z
@@ -74,25 +74,42 @@ class Point3D:
         cr, sr = math.cos(roll), math.sin(roll)
         cy, sy = math.cos(yaw), math.sin(yaw)
 
-        # Step 2: Apply rotations (Order matters in 3D! This uses Pitch -> Roll -> Yaw)
+        # Apply rotations (Order matters in 3D! This uses Pitch -> Roll -> Yaw)
 
-        # 2a. Rotate around X-axis (Pitch)
+        ## Rotate around X-axis (Pitch)
         x1 = tx
         y1 = ty * cp - tz * sp
         z1 = ty * sp + tz * cp
 
-        # 2b. Rotate around Y-axis (Roll)
+        ## Rotate around Y-axis (Roll)
         x2 = x1 * cr + z1 * sr
         y2 = y1
         z2 = -x1 * sr + z1 * cr
 
-        # 2c. Rotate around Z-axis (Yaw)
+        ## Rotate around Z-axis (Yaw)
         x3 = x2 * cy - y2 * sy
         y3 = x2 * sy + y2 * cy
         z3 = z2
 
-        # Step 3: Translate the point back
+        ## Translate the point back
         return Point3D(x3 + origin.x, y3 + origin.y, z3 + origin.z)
+
+
+    def rotate_around_z(self, cx: float, cy: float, angle: float):
+        cos_theta = math.cos(angle)
+        sin_theta = math.sin(angle)
+
+        translated_x = self.x - cx
+        translated_y = self.y - cy
+
+        rotated_x = translated_x * cos_theta - translated_y * sin_theta
+        rotated_y = translated_x * sin_theta + translated_y * cos_theta
+
+        final_x = rotated_x + cx
+        final_y = rotated_y + cy
+
+        return Point3D(final_x, final_y, self.z)
+
 
     @staticmethod
     def from_dict(d: dict) -> 'Point3D':
