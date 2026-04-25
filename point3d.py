@@ -54,8 +54,9 @@ class Point3D:
 
     def rotate(self, orientation: Orientation3D, origin: Optional['Point3D'] = None) -> 'Point3D':
         """
-        Rotates this point around another 'origin' Point3D using the given Orientation3D.
-        Assumes standard coordinate mapping: Pitch=X, Roll=Y, Yaw=Z.
+        Rotates this point around another 'origin' Point3D.
+        Mapping: Pitch=X, Roll=Y, Yaw=Z.
+        Rotation applies Intrinsically (local axes) in the order: Pitch -> Roll -> Yaw.
         """
         if origin is None:
             origin = Point3D()  # Default to (0, 0, 0) if no origin provided
@@ -74,26 +75,25 @@ class Point3D:
         cr, sr = math.cos(roll), math.sin(roll)
         cy, sy = math.cos(yaw), math.sin(yaw)
 
-        # Apply rotations (Order matters in 3D! This uses Pitch -> Roll -> Yaw)
+        # Apply reversed order (Z -> Y -> X) to achieve Intrinsic local rotation
 
-        ## Rotate around X-axis (Pitch)
-        x1 = tx
-        y1 = ty * cp - tz * sp
-        z1 = ty * sp + tz * cp
+        ## Rotate around Z-axis (Yaw)
+        x1 = tx * cy - ty * sy
+        y1 = tx * sy + ty * cy
+        z1 = tz
 
         ## Rotate around Y-axis (Roll)
         x2 = x1 * cr + z1 * sr
         y2 = y1
         z2 = -x1 * sr + z1 * cr
 
-        ## Rotate around Z-axis (Yaw)
-        x3 = x2 * cy - y2 * sy
-        y3 = x2 * sy + y2 * cy
-        z3 = z2
+        ## Rotate around X-axis (Pitch)
+        x3 = x2
+        y3 = y2 * cp - z2 * sp
+        z3 = y2 * sp + z2 * cp
 
         ## Translate the point back
         return Point3D(x3 + origin.x, y3 + origin.y, z3 + origin.z)
-
 
     def rotate_around_z(self, cx: float, cy: float, angle: float):
         cos_theta = math.cos(angle)
